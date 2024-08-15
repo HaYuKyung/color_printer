@@ -1,12 +1,14 @@
 import pandas as pd
-import pandas as pd
-from IPython.display import HTML
+import streamlit as st
+from IPython.display import display, HTML
 from difflib import get_close_matches
 from difflib import SequenceMatcher
 from konlpy.tag import Okt
+import webbrowser
 
 
-df = pd.read_csv('color-adjective.csv')
+df = pd.read_csv("C:/Users/hyk03/project-sources/print_color/color-adjective.csv")
+
 
 def remove_stopwords(sentence):
     stopwords = ['하다', '다','게','이','를','을','가']
@@ -54,12 +56,12 @@ color_words = preprocess_color_words(color_words)
 ### 컬러 초기값 세팅
 best_match = set_initial_value(user_input, color_words)
 
-print(f"가장 유사한 단어쌍: {best_match[0]} - {best_match[1]}, 유사도: {best_match[2]}")
+st.write(f"가장 유사한 단어쌍: {best_match[0]} - {best_match[1]}, 유사도: {best_match[2]}")
 
 color_words_row = df[df['color'] == best_match[1]]
 input_category = color_words_row['category'].values[0]
 input_hex = color_words_row['hex'].values[0]
 
-print(f"Category: {input_category}")
-print(f"Hex value: {input_hex}")
+st.write(f"Category: {input_category}")
+st.write(f"Hex value: {input_hex}")
 display(HTML(color_square(input_hex)))
