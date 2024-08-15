@@ -46,7 +46,7 @@ def color_square(hex_code):
 
 
 ###데이터 입력 및 전처리
-user_input = input("새로운 색채어를 입력하세요: ")
+user_input = st.input("새로운 색채어를 입력하세요: ")
 user_input = remove_stopwords(user_input)
 color_words = df['color'].tolist()
 color_words = preprocess_color_words(color_words)
