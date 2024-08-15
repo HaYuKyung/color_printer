@@ -1,10 +1,9 @@
 import pandas as pd
 import streamlit as st
-#from IPython.display import display, HTML
+from IPython.display import display, HTML
 from difflib import get_close_matches
 from difflib import SequenceMatcher
 from konlpy.tag import Okt
-import webbrowser
 
 
 df = pd.read_csv("C:/Users/hyk03/project-sources/print_color/color-adjective.csv")
