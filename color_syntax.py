@@ -1,6 +1,6 @@
 import pandas as pd
 import streamlit as st
-from IPython.display import display, HTML
+#from IPython.display import display, HTML
 from difflib import get_close_matches
 from difflib import SequenceMatcher
 from konlpy.tag import Okt
