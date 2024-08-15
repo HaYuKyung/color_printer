@@ -1,3 +1,4 @@
+import os
 import pandas as pd
 import streamlit as st
 from difflib import get_close_matches
@@ -6,8 +7,8 @@ from konlpy.tag import Okt
 
 st.title("언어의 감성")
 
-df = pd.read_csv("color-adjective.csv")
-
+file_path = os.path.join(os.path.dirname(__file__), "color-adjective.csv")
+df = pd.read_csv(file_path)
 
 def remove_stopwords(sentence):
     stopwords = ['하다', '다','게','이','를','을','가']
