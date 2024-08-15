@@ -1,9 +1,14 @@
 import pandas as pd
 import streamlit as st
+import jpype
+import os
 from difflib import get_close_matches
 from difflib import SequenceMatcher
 from konlpy.tag import Okt
 
+jvm_path = jpype.getDefaultJVMpath()
+if not jpype.isJVMStarted():
+    jpype.startJVM(jvm_path)
 
 df = pd.read_csv("color-adjective.csv")
 
