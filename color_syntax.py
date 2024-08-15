@@ -5,7 +5,7 @@ from difflib import SequenceMatcher
 from konlpy.tag import Okt
 
 
-df = pd.read_csv("C:/Users/hyk03/project-sources/print_color/color-adjective.csv")
+df = pd.read_csv("color-adjective.csv")
 
 
 def remove_stopwords(sentence):
