@@ -1,14 +1,10 @@
 import pandas as pd
 import streamlit as st
-import jpype
-import os
 from difflib import get_close_matches
 from difflib import SequenceMatcher
 from konlpy.tag import Okt
 
-jvm_path = jpype.getDefaultJVMpath()
-if not jpype.isJVMStarted():
-    jpype.startJVM(jvm_path)
+st.title("언어의 감성")
 
 df = pd.read_csv("color-adjective.csv")
 
@@ -43,14 +39,16 @@ def set_initial_value(user_input, color_words):
     return best_match
 
 def color_square(hex_code):
-  html_code= f'<div style="width: 100px; height: 100px; background-color: {hex_code};"></div>'
+  html_code = f'''
+  <div style="width: 100px; height: 100px; background-color: {hex_code};"></div>
+  '''
   return html_code
 
 
 
 
 ###데이터 입력 및 전처리
-user_input = st.text_input("새로운 색채어를 입력하세요: ")
+user_input = st.text_input("문장을 입력하세요: ")
 user_input = remove_stopwords(user_input)
 color_words = df['color'].tolist()
 color_words = preprocess_color_words(color_words)
@@ -59,11 +57,13 @@ color_words = preprocess_color_words(color_words)
 ### 컬러 초기값 세팅
 best_match = set_initial_value(user_input, color_words)
 
-st.write(f"가장 유사한 단어쌍: {best_match[0]} - {best_match[1]}, 유사도: {best_match[2]}")
-
 color_words_row = df[df['color'] == best_match[1]]
-input_category = color_words_row['category'].values[0]
-input_hex = color_words_row['hex'].values[0]
 
-st.write(f"Category: {input_category}")
-st.write(f"Hex value: {input_hex}")
+if not color_words_row.empty:
+    input_category = color_words_row['category'].values[0]
+    input_hex = color_words_row['hex'].values[0]
+    st.write(f"가장 유사한 단어쌍: {best_match[0]} - {best_match[1]}, 유사도: {best_match[2]}")
+    st.write(f"Category: {input_category}")
+    st.write(f"Hex value: {input_hex}")
+    st.markdown(color_square(input_hex), unsafe_allow_html=True)
+
