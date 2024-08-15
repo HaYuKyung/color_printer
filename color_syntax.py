@@ -5,7 +5,10 @@ from difflib import get_close_matches
 from difflib import SequenceMatcher
 from konlpy.tag import Okt
 
+
 st.title("언어의 감성")
+st.write("")
+st.write("")
 
 file_path = os.path.join(os.path.dirname(__file__), "color-adjective.csv")
 df = pd.read_csv(file_path)
@@ -41,15 +44,14 @@ def set_initial_value(user_input, color_words):
 
 def color_square(hex_code):
   html_code = f'''
-  <div style="width: 100px; height: 100px; background-color: {hex_code};"></div>
+  <div style="width: 300px; height: 300px; background-color: {hex_code};"></div>
   '''
   return html_code
 
 
-
-
 ###데이터 입력 및 전처리
-user_input = st.text_input("문장을 입력하세요: ")
+user_input = st.text_input("색채어가 포함된 문장을 입력해주세요 :")
+st.write("")
 user_input = remove_stopwords(user_input)
 color_words = df['color'].tolist()
 color_words = preprocess_color_words(color_words)
@@ -60,11 +62,11 @@ best_match = set_initial_value(user_input, color_words)
 
 color_words_row = df[df['color'] == best_match[1]]
 
-if not color_words_row.empty:
+if not color_words_row.empty:    
     input_category = color_words_row['category'].values[0]
     input_hex = color_words_row['hex'].values[0]
-    st.write(f"가장 유사한 단어쌍: {best_match[0]} - {best_match[1]}, 유사도: {best_match[2]}")
-    st.write(f"Category: {input_category}")
-    st.write(f"Hex value: {input_hex}")
+    #st.write(f"가장 유사한 단어쌍: {best_match[0]} - {best_match[1]}, 유사도: {best_match[2]}")
+    #st.write(f"Category: {input_category}")
+    #st.write(f"Hex value: {input_hex}")
     st.markdown(color_square(input_hex), unsafe_allow_html=True)
 
