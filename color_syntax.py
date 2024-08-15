@@ -1,6 +1,6 @@
 import pandas as pd
 import streamlit as st
-from IPython.display import display, HTML
+#from IPython.display import display, HTML
 from difflib import get_close_matches
 from difflib import SequenceMatcher
 from konlpy.tag import Okt
@@ -64,4 +64,4 @@ input_hex = color_words_row['hex'].values[0]
 
 st.write(f"Category: {input_category}")
 st.write(f"Hex value: {input_hex}")
-display(HTML(color_square(input_hex)))
+#display(HTML(color_square(input_hex)))
