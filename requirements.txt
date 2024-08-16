@@ -1,4 +1,4 @@
 pandas
 streamlit
 konlpy
-streamlit == 1.7
+streamlit == 1.6
