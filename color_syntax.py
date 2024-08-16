@@ -65,8 +65,8 @@ color_words_row = df[df['color'] == best_match[1]]
 if not color_words_row.empty:    
     input_category = color_words_row['category'].values[0]
     input_hex = color_words_row['hex'].values[0]
-    #st.write(f"가장 유사한 단어쌍: {best_match[0]} - {best_match[1]}, 유사도: {best_match[2]}")
-    #st.write(f"Category: {input_category}")
-    #st.write(f"Hex value: {input_hex}")
+    st.write(f"가장 유사한 단어쌍: {best_match[0]} - {best_match[1]}, 유사도: {best_match[2]}")
+    st.write(f"Category: {input_category}")
+    st.write(f"Hex value: {input_hex}")
     st.markdown(color_square(input_hex), unsafe_allow_html=True)
 
