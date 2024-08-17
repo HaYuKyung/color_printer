@@ -10,7 +10,7 @@ st.title("언어의 감성")
 st.write("")
 st.write("")
 
-file_path = os.path.join(os.path.dirname(__file__), "color-adjective.csv")
+file_path = os.path.join(os.path.dirname(__file__), "csv/color-adjective.csv")
 df = pd.read_csv(file_path)
 
 def remove_stopwords(sentence):
