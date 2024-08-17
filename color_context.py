@@ -72,13 +72,13 @@ def categorize_color_adjective(user_input):
     return best_match
 
 def color_square(red, green, blue):
-  html_code= f'<div style="width: 100px; height: 100px; background-color: rgb({red}, {green}, {blue});"></div>'
+  html_code= f'<div style="width: 300px; height: 300px; background-color: rgb({red}, {green}, {blue});"></div>'
   return html_code
 
 
 def context_main():
     ###################### 사용자 입력
-    user_input = input("새로운 색채어를 입력하세요: ")
+    user_input = st.text_input("색을 연상시키는 문장을 입력해주세요: ")
     user_input = remove_stopwords(user_input)
 
     ###################### 입력 문장의 1차 색계열 분류(색채어가 없을 경우를 대비하여)
