@@ -1,230 +1,150 @@
-{
- "cells": [
-  {
-   "cell_type": "code",
-   "execution_count": 52,
-   "id": "34d77785-b663-4bf8-805d-16bf572d3c7d",
-   "metadata": {
-    "scrolled": true
-   },
-   "outputs": [
-    {
-     "name": "stdin",
-     "output_type": "stream",
-     "text": [
-      "새로운 색채어를 입력하세요:  퍼렇게 멍이 든\n"
-     ]
-    },
-    {
-     "name": "stdout",
-     "output_type": "stream",
-     "text": [
-      "<색채어에 대한 색분류 모델>\n",
-      "유사한 단어쌍: '퍼렇게'-'누렇'  색계열: '노란계열'   유사도: '0.4'\n",
-      "유사한 단어쌍: '퍼렇게'-'싯누렇'  색계열: '노란계열'   유사도: '0.3333333333333333'\n",
-      "유사한 단어쌍: '퍼렇게'-'퍼렇'  색계열: '파란계열'   유사도: '0.8'\n",
-      "유사한 단어쌍: '퍼렇게'-'시퍼렇'  색계열: '파란계열'   유사도: '0.6666666666666666'\n",
-      "유사한 단어쌍: '퍼렇게'-'퍼름'  색계열: '파란계열'   유사도: '0.4'\n",
-      "유사한 단어쌍: '퍼렇게'-'퍼르무레'  색계열: '파란계열'   유사도: '0.2857142857142857'\n",
-      "가장 유사한 단어쌍-색채어: 퍼렇게 - 퍼렇 색의 계열: 파란계열 유사도: 0.8\n",
-      "최종 명도: 136\n",
-      "최종 채도: 0\n"
-     ]
-    },
-    {
-     "data": {
-      "text/html": [
-       "<div style=\"width: 100px; height: 100px; background-color: rgb(0, 0, 119);\"></div>"
-      ],
-      "text/plain": [
-       "<IPython.core.display.HTML object>"
-      ]
-     },
-     "metadata": {},
-     "output_type": "display_data"
-    }
-   ],
-   "source": [
-    "import pandas as pd\n",
-    "import difflib\n",
-    "import pandas as pd\n",
-    "from konlpy.tag import Okt\n",
-    "from fuzzywuzzy import process\n",
-    "from IPython.display import HTML\n",
-    "\n",
-    "\n",
-    "#알고리즘 순서\n",
-    "# 1. 색채어 데이터와 입력문장의 단어들 간의 유사도 비교 -> 유사도 가장 높은 단어 쌍의 유사도가 0.5 이상이면 있다고 판단\n",
-    "#  1-1 색채어가 있을 경우, 바로 계열 확정 및 초기컬러 세팅\n",
-    "#  1-2 색채어가 없을 경우, 색을 연상시키는 단어 목록과 입력문장의 단어들 간의 의미적 유사도 비교 \n",
-    "#  1-3 색의 계열 확정 및 초기컬러 세팅\n",
-    "# 2. 이후, 명도/채도의 의미를 가질 수 있는 단어들과 입력문장 단어들 간의 의미적 유사도 비교 -> 기본 값에서 명도 조정\n",
-    "\n",
-    "\n",
-    "df_context_category = pd.read_csv('color-context.csv')\n",
-    "df_color_adjective= pd.read_csv('b-s-color-setting_value.csv')\n",
-    "df_saturation = pd.read_csv('saturation.csv')\n",
-    "df_brightness = pd.read_csv('brightness.csv')\n",
-    "\n",
-    "\n",
-    "def remove_stopwords(sentence):\n",
-    "    stopwords = ['하다', '다','게','이','를','을','가']\n",
-    "    okt=Okt()\n",
-    "    words = okt.morphs(sentence)\n",
-    "    words = [word for word in words if word not in stopwords]\n",
-    "    #print(words)\n",
-    "    return words\n",
-    "\n",
-    "def categorize_color_context(user_input):\n",
-    "    #print(\"<문맥에 대한 색분류 모델>\")\n",
-    "    best_match = (\"\",\"\",\"\",0)\n",
-    "    for user_word in user_input:\n",
-    "        for rows in df_context_category.itertuples():\n",
-    "            similarity = difflib.SequenceMatcher(None, user_word, rows.color).ratio()\n",
-    "            #if similarity > 0 :print(f\"유사한 단어쌍: '{user_word}'-'{rows.color}'  색계열: '{rows.category}'  유사도: '{similarity}'\")\n",
-    "            if similarity > best_match[3]:\n",
-    "                best_match = (user_word, rows.color, rows.category, similarity)\n",
-    "    return best_match\n",
-    "\n",
-    "def saturation_context(user_input):\n",
-    "    #print(\"<문맥에 대한 채도 판단 모델>\")\n",
-    "    best_match = (\"\",\"\",0,0)\n",
-    "    for user_word in user_input:\n",
-    "        for rows in df_saturation.itertuples():\n",
-    "            similarity = difflib.SequenceMatcher(None, user_word, rows.word).ratio()\n",
-    "            #if similarity > 0 :print(f\"유사한 단어쌍: '{user_word}'-'{rows.word}'  채도: '{rows.saturation}'  유사도: '{similarity}'\")\n",
-    "            if similarity > best_match[3]:\n",
-    "                best_match = (user_word, rows.word, rows.saturation, similarity)\n",
-    "    return best_match\n",
-    "\n",
-    "def brightness_context(user_input):\n",
-    "    #print(\"<문맥에 대한 명도 판단 모델>\")\n",
-    "    best_match = (\"\",\"\",0,0)\n",
-    "    for user_word in user_input:\n",
-    "        for rows in df_brightness.itertuples():\n",
-    "            similarity = difflib.SequenceMatcher(None, user_word, rows.word).ratio()\n",
-    "            #if similarity > 0 :print(f\"유사한 단어쌍: '{user_word}'-'{rows.word}'  명도: '{rows.brightness}'  유사도: '{similarity}'\")\n",
-    "            if similarity > best_match[3]:\n",
-    "                best_match = (user_word, rows.word, rows.brightness, similarity)\n",
-    "    return best_match  \n",
-    "\n",
-    "def categorize_color_adjective(user_input):\n",
-    "    print(\"<색채어에 대한 색분류 모델>\")\n",
-    "    best_match = (\"\",\"\",\"\",0,0,0)\n",
-    "    for user_word in user_input:\n",
-    "        for rows in df_color_adjective.itertuples():\n",
-    "            similarity = difflib.SequenceMatcher(None, user_word, rows.color).ratio()\n",
-    "            if similarity > 0 : print(f\"유사한 단어쌍: '{user_word}'-'{rows.color}'  색계열: '{rows.category}'   유사도: '{similarity}'\")\n",
-    "            if similarity > best_match[3]:\n",
-    "                best_match = (user_word, rows.color, rows.category, similarity, rows.saturation, rows.brightness)\n",
-    "    return best_match\n",
-    "\n",
-    "def color_square(red, green, blue):\n",
-    "  html_code= f'<div style=\"width: 100px; height: 100px; background-color: rgb({red}, {green}, {blue});\"></div>'\n",
-    "  return html_code\n",
-    "\n",
-    "\n",
-    "\n",
-    "###################### 사용자 입력\n",
-    "user_input = input(\"새로운 색채어를 입력하세요: \")\n",
-    "user_input = remove_stopwords(user_input)\n",
-    "\n",
-    "###################### 입력 문장의 1차 색계열 분류(색채어가 없을 경우를 대비하여)\n",
-    "best_match = categorize_color_context(user_input)\n",
-    "\n",
-    "#print(f\"가장 유사한 단어쌍-전체: {best_match[0]} - {best_match[1]} 색의 계열: {best_match[2]} 유사도: {best_match[3]}\")\n",
-    "best_match_s = saturation_context(user_input)\n",
-    "best_match_b = brightness_context(user_input)\n",
-    "#print(f\"가장 유사한 명도쌍: {best_match_s[0]} - {best_match_s[1]} 색의 계열: {best_match_s[2]} 유사도: {best_match_s[3]}\")\n",
-    "#print(f\"가장 유사한 채도쌍: {best_match_b[0]} - {best_match_b[1]} 색의 계열: {best_match_b[2]} 유사도: {best_match_b[3]}\")\n",
-    "\n",
-    "###################### 입력 문장의 2차 색계열 분류(색채어가 있을 경우 색계열에 영향을 더 많이 끼치므로)\n",
-    "best_match_color = categorize_color_adjective(user_input)\n",
-    "print(f\"가장 유사한 단어쌍-색채어: {best_match_color[0]} - {best_match_color[1]} 색의 계열: {best_match_color[2]} 유사도: {best_match_color[3]}\")\n",
-    "if(best_match_color[3] >= 0.5):\n",
-    "    input_category = best_match_color[2]\n",
-    "    brightness = best_match_color[4]\n",
-    "    saturation = best_match_color[5]\n",
-    "    print(f\"최종 명도: {brightness}\")\n",
-    "    print(f\"최종 채도: {saturation}\")\n",
-    "    if saturation < brightness:\n",
-    "        saturation = 0\n",
-    "    else:\n",
-    "        brightness = 0\n",
-    "else:\n",
-    "    input_category = best_match[2]\n",
-    "    brightness = best_match_s[2]\n",
-    "    saturation = best_match_b[2]\n",
-    "\n",
-    "########################### 계열, 명도, 채도 통합한 색 출력\n",
-    "r=0\n",
-    "g=0\n",
-    "b=0\n",
-    "\n",
-    "if input_category == '빨간계열':\n",
-    "  r=255-brightness\n",
-    "  g=saturation\n",
-    "  b=saturation\n",
-    "  #print(f\"RGB({r},{g},{b})\")\n",
-    "  if g<r:\n",
-    "    color_html = color_square(r, g, b)\n",
-    "    display(HTML(color_html))\n",
-    "  else:\n",
-    "    color_html = color_square(r, 0, 0)\n",
-    "    display(HTML(color_html))\n",
-    "\n",
-    "\n",
-    "if input_category == '파란계열':\n",
-    "  r=saturation\n",
-    "  g=saturation\n",
-    "  b=255-brightness\n",
-    "  #print(f\"RGB({r},{g},{b})\")\n",
-    "  if g<b:\n",
-    "    color_html = color_square(r, g, b)\n",
-    "    display(HTML(color_html))\n",
-    "  else:\n",
-    "    color_html = color_square(0, 0, b)\n",
-    "    display(HTML(color_html))\n",
-    "\n",
-    "\n",
-    "if input_category == '노란계열':\n",
-    "  r=255-brightness\n",
-    "  g=238-brightness\n",
-    "  b=saturation\n",
-    "  #print(f\"RGB({r},{g},{b})\")\n",
-    "  if b<g:\n",
-    "      color_html = color_square(r, g, 0)\n",
-    "      display(HTML(color_html))"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "d25daf4d-e95c-45ee-b0b3-b7badb680ad6",
-   "metadata": {},
-   "outputs": [],
-   "source": []
-  }
- ],
- "metadata": {
-  "kernelspec": {
-   "display_name": "Python 3 (ipykernel)",
-   "language": "python",
-   "name": "python3"
-  },
-  "language_info": {
-   "codemirror_mode": {
-    "name": "ipython",
-    "version": 3
-   },
-   "file_extension": ".py",
-   "mimetype": "text/x-python",
-   "name": "python",
-   "nbconvert_exporter": "python",
-   "pygments_lexer": "ipython3",
-   "version": "3.11.7"
-  }
- },
- "nbformat": 4,
- "nbformat_minor": 5
-}
+import pandas as pd
+import difflib
+import pandas as pd
+from konlpy.tag import Okt
+from fuzzywuzzy import process
+from IPython.display import HTML
+
+
+#알고리즘 순서
+# 1. 색채어 데이터와 입력문장의 단어들 간의 유사도 비교 -> 유사도 가장 높은 단어 쌍의 유사도가 0.5 이상이면 있다고 판단
+#  1-1 색채어가 있을 경우, 바로 계열 확정 및 초기컬러 세팅
+#  1-2 색채어가 없을 경우, 색을 연상시키는 단어 목록과 입력문장의 단어들 간의 의미적 유사도 비교 
+#  1-3 색의 계열 확정 및 초기컬러 세팅
+# 2. 이후, 명도/채도의 의미를 가질 수 있는 단어들과 입력문장 단어들 간의 의미적 유사도 비교 -> 기본 값에서 명도 조정
+
+
+df_context_category = pd.read_csv('color-context.csv')
+df_color_adjective= pd.read_csv('b-s-color-setting_value.csv')
+df_saturation = pd.read_csv('saturation.csv')
+df_brightness = pd.read_csv('brightness.csv')
+
+
+def remove_stopwords(sentence):
+    stopwords = ['하다', '다','게','이','를','을','가']
+    okt=Okt()
+    words = okt.morphs(sentence)
+    words = [word for word in words if word not in stopwords]
+    #print(words)
+    return words
+
+def categorize_color_context(user_input):
+    #print("<문맥에 대한 색분류 모델>")
+    best_match = ("","","",0)
+    for user_word in user_input:
+        for rows in df_context_category.itertuples():
+            similarity = difflib.SequenceMatcher(None, user_word, rows.color).ratio()
+            #if similarity > 0 :print(f"유사한 단어쌍: '{user_word}'-'{rows.color}'  색계열: '{rows.category}'  유사도: '{similarity}'")
+            if similarity > best_match[3]:
+                best_match = (user_word, rows.color, rows.category, similarity)
+    return best_match
+
+def saturation_context(user_input):
+    #print("<문맥에 대한 채도 판단 모델>")
+    best_match = ("","",0,0)
+    for user_word in user_input:
+        for rows in df_saturation.itertuples():
+            similarity = difflib.SequenceMatcher(None, user_word, rows.word).ratio()
+            #if similarity > 0 :print(f"유사한 단어쌍: '{user_word}'-'{rows.word}'  채도: '{rows.saturation}'  유사도: '{similarity}'")
+            if similarity > best_match[3]:
+                best_match = (user_word, rows.word, rows.saturation, similarity)
+    return best_match
+
+def brightness_context(user_input):
+    #print("<문맥에 대한 명도 판단 모델>")
+    best_match = ("","",0,0)
+    for user_word in user_input:
+        for rows in df_brightness.itertuples():
+            similarity = difflib.SequenceMatcher(None, user_word, rows.word).ratio()
+            #if similarity > 0 :print(f"유사한 단어쌍: '{user_word}'-'{rows.word}'  명도: '{rows.brightness}'  유사도: '{similarity}'")
+            if similarity > best_match[3]:
+                best_match = (user_word, rows.word, rows.brightness, similarity)
+    return best_match  
+
+def categorize_color_adjective(user_input):
+    print("<색채어에 대한 색분류 모델>")
+    best_match = ("","","",0,0,0)
+    for user_word in user_input:
+        for rows in df_color_adjective.itertuples():
+            similarity = difflib.SequenceMatcher(None, user_word, rows.color).ratio()
+            if similarity > 0 : print(f"유사한 단어쌍: '{user_word}'-'{rows.color}'  색계열: '{rows.category}'   유사도: '{similarity}'")
+            if similarity > best_match[3]:
+                best_match = (user_word, rows.color, rows.category, similarity, rows.saturation, rows.brightness)
+    return best_match
+
+def color_square(red, green, blue):
+  html_code= f'<div style="width: 100px; height: 100px; background-color: rgb({red}, {green}, {blue});"></div>'
+  return html_code
+
+
+
+###################### 사용자 입력
+user_input = input("새로운 색채어를 입력하세요: ")
+user_input = remove_stopwords(user_input)
+
+###################### 입력 문장의 1차 색계열 분류(색채어가 없을 경우를 대비하여)
+best_match = categorize_color_context(user_input)
+
+#print(f"가장 유사한 단어쌍-전체: {best_match[0]} - {best_match[1]} 색의 계열: {best_match[2]} 유사도: {best_match[3]}")
+best_match_s = saturation_context(user_input)
+best_match_b = brightness_context(user_input)
+#print(f"가장 유사한 명도쌍: {best_match_s[0]} - {best_match_s[1]} 색의 계열: {best_match_s[2]} 유사도: {best_match_s[3]}")
+#print(f"가장 유사한 채도쌍: {best_match_b[0]} - {best_match_b[1]} 색의 계열: {best_match_b[2]} 유사도: {best_match_b[3]}")
+
+###################### 입력 문장의 2차 색계열 분류(색채어가 있을 경우 색계열에 영향을 더 많이 끼치므로)
+best_match_color = categorize_color_adjective(user_input)
+print(f"가장 유사한 단어쌍-색채어: {best_match_color[0]} - {best_match_color[1]} 색의 계열: {best_match_color[2]} 유사도: {best_match_color[3]}")
+if(best_match_color[3] >= 0.5):
+    input_category = best_match_color[2]
+    brightness = best_match_color[4]
+    saturation = best_match_color[5]
+    print(f"최종 명도: {brightness}")
+    print(f"최종 채도: {saturation}")
+    if saturation < brightness:
+        saturation = 0
+    else:
+        brightness = 0
+else:
+    input_category = best_match[2]
+    brightness = best_match_s[2]
+    saturation = best_match_b[2]
+
+########################### 계열, 명도, 채도 통합한 색 출력
+r=0
+g=0
+b=0
+
+if input_category == '빨간계열':
+  r=255-brightness
+  g=saturation
+  b=saturation
+  #print(f"RGB({r},{g},{b})")
+  if g<r:
+    color_html = color_square(r, g, b)
+    display(HTML(color_html))
+  else:
+    color_html = color_square(r, 0, 0)
+    display(HTML(color_html))
+
+
+if input_category == '파란계열':
+  r=saturation
+  g=saturation
+  b=255-brightness
+  #print(f"RGB({r},{g},{b})")
+  if g<b:
+    color_html = color_square(r, g, b)
+    display(HTML(color_html))
+  else:
+    color_html = color_square(0, 0, b)
+    display(HTML(color_html))
+
+
+if input_category == '노란계열':
+  r=255-brightness
+  g=238-brightness
+  b=saturation
+  #print(f"RGB({r},{g},{b})")
+  if b<g:
+      color_html = color_square(r, g, 0)
+      display(HTML(color_html))
