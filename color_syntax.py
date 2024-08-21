@@ -66,3 +66,4 @@ def syntax_main():
         #st.write(f"Category: {input_category}")
         #st.write(f"Hex value: {input_hex}")
         st.markdown(color_square(input_hex), unsafe_allow_html=True)
+
